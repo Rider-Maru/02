@@ -9,6 +9,7 @@ var isAuthorizable = false;
 var onStandBy = false;
 var onAuthorize = false;
 
+
 var progriseKeyNum = 0;
 
 var threshold = 23;
