@@ -22,6 +22,9 @@ var swiper = new Swiper('.swiper-container', {
     loop: false,
 });
 
+var ctx;
+var recorder;
+
 function finishAudioLoading() {
     if (navigator.userAgent.match(/(iPhone|iPad|iPod|Android)/i)) {
         medias.video.facingMode = { exact: "environment" };
@@ -53,7 +56,25 @@ video.addEventListener("loadedmetadata", function (e) {
     canvas.height = video.videoHeight/3;
 
     //getContextで描画先を取得
-    var ctx = canvas.getContext("2d");
+    ctx = canvas.getContext("2d");
+    //ストリームを生成
+    var stream = canvas.captureStream();
+    recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+    //ダウンロード用のリンクを準備
+    var anchor = document.getElementById('downloadlink');
+    //録画終了時に動画ファイルのダウンロードリンクを生成する処理
+    recorder.ondataavailable = function (e) {
+        var videoBlob = new Blob([e.data], { type: e.data.type });
+        blobUrl = window.URL.createObjectURL(videoBlob);
+        anchor.download = 'movie.webm';
+        anchor.href = blobUrl;
+        anchor.style.display = 'block';
+    }
+    //録画開始
+    recorder.start();
+
+
+
     //毎フレームの実行処理
     setInterval(function (e) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -125,6 +146,7 @@ function ring(num) {
         playSECallKey(progriseKeyNum);
         playSECallKey(progriseKeyNum);
     }
+    if(num==2)recorder.stop();
     SEstandbyStop();
 }
 
