@@ -13,6 +13,46 @@ var onAuthorize = false;
 var progriseKeyNum = 0;
 
 var threshold = 23;
+
+
+var localVideo = document.getElementById('local_video');
+var playbackVideo = document.getElementById('playback_video');
+var anker = document.getElementById('downloadlink');
+var localStream = null;
+var recorder = null;
+var blobUrl = null;
+
+function startRecording() {
+    if (!localStream) {
+        console.warn("no stream");
+        return;
+    }
+    if (recorder) {
+        console.warn("recorder already exist");
+        return;
+    }
+
+    recorder = new MediaRecorder(localStream);
+    recorder.ondataavailable = function (evt) {
+        console.log("data available, start playback");
+        var videoBlob = new Blob([evt.data], { type: evt.data.type });
+        blobUrl = window.URL.createObjectURL(videoBlob);
+
+        anker.download = 'recorded.webm';
+        anker.href = blobUrl;
+    }
+    recorder.start();
+    console.log("start recording");
+}
+
+function stopRecording() {
+    if (recorder) {
+        recorder.stop();
+        console.log("stop recording");
+    }
+}
+
+
 //videoタグを取得
 var video = document.getElementById("video");
 //取得するメディア情報を指定
@@ -36,7 +76,7 @@ function finishAudioLoading() {
         function (stream) {
             //videoタグのソースにwebカメラの映像を指定
             video.srcObject = stream;
-
+            localStream = stream;
         }
     ).catch(
         function (err) {
